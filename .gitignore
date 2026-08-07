@@ -34,7 +34,7 @@ yarn-error.log*
 .env*
 
 # prisma generated client (regenerate with `npm run db:generate`)
-/src/generated/
+/generated/
 
 # vercel
 .vercel

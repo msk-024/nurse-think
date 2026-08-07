@@ -1,0 +1,100 @@
+generator client {
+    provider = "prisma-client"
+    output ="../generated/prisma"
+}
+
+datasource db{
+    provider = "postgresql"
+}
+
+enum CaseStatus{
+    draft 
+    published 
+}        
+enum CaseMode {
+    clinical
+    occupational
+}
+enum EvaluationLevel {
+    excellent
+    good
+    check
+}
+
+model User{
+        id String @id @db.Uuid
+        email String @unique
+        createdAt DateTime @default(now()) @map("created_at")
+        updatedAt DateTime @updatedAt @map("updated_at")
+
+        results Result[]
+
+        @@map("users")
+}
+
+model Case {
+        id Int @id @default(autoincrement())
+        status CaseStatus @default(draft)
+        mode CaseMode 
+        level Int
+        title String
+        situation String
+        hiddenAnswer String @map("hidden_answer")
+        afterStory String? @map("after_story")
+        commentary String
+        createdAt DateTime @default(now()) @map("created_at")
+        updatedAt DateTime @updatedAt @map("updated_at")
+        deletedAt DateTime? @map("deleted_at") 
+
+        results Result[]
+
+        @@index([status,deletedAt])
+
+        @@map("cases")
+
+}
+
+model Reviewer {
+        id Int @id @default(autoincrement())
+        name String
+        imageUrl String @map("image_url")
+        roleInstruction String @map("role_instruction")
+        createdAt DateTime @default(now()) @map("created_at")
+
+        results Result[]
+
+        @@map("reviewers")
+}
+
+model Result {
+        id Int @id @default(autoincrement())
+        userId String? @db.Uuid @map("user_id")
+        user User? @relation(fields:[userId],references:[id],onDelete:SetNull)
+        caseId Int @map("case_id")
+        case Case @relation(fields:[caseId],references:[id],onDelete:Restrict)
+        reviewerId Int @map("reviewer_id")
+        reviewer Reviewer @relation(fields:[reviewerId],references:[id],onDelete:Restrict)
+        userAnswer String @db.Text @map("user_answer")
+        aiEvaluation String @map("ai_evaluation")
+        score Int
+        createdAt DateTime @default(now()) @map("created_at") 
+
+        feedback ReviewerFeedback?
+        
+        @@index([userId,createdAt])
+        @@index([caseId])
+
+        @@map("results")
+
+}
+
+model ReviewerFeedback {
+        id Int @id @default(autoincrement())
+        resultId Int @unique @map("result_id")
+        evaluationLevel EvaluationLevel @map("evaluation_level")
+        feedbackText String @db.Text @map("feedback_text")
+
+        result Result @relation(fields:[resultId],references:[id],onDelete:Cascade)
+
+        @@map("reviewer_feedbacks")
+}
