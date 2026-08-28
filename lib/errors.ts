@@ -29,7 +29,7 @@ export class ValidationError extends AppError {
 
   constructor(
     message: string,
-    readonly issue: ReadonlyArray<{ path: string; message: string }> = [],
+    readonly issues: ReadonlyArray<{ path: string; message: string }> = [],
   ) {
     super(message);
   }
